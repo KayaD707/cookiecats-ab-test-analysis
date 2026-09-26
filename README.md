@@ -1,6 +1,6 @@
 # Cookie Cats A/B Test Analysis
 
-**Status:** data acquired and quality-checked ([`docs/DATA_QUALITY.md`](docs/DATA_QUALITY.md)) — one real finding, a borderline sample ratio mismatch, carried forward as a documented caveat rather than silently resolved. Power analysis (Phase 3) is next.
+**Status:** power analysis complete ([`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md)) — this sample can detect a +0.74pp absolute lift in `retention_7` at 80% power. The primary hypothesis test (Phase 4) is next — still deliberately not run yet.
 
 ## Business question
 
@@ -47,9 +47,8 @@ Each phase below is intended to be its own session — depth over speed.
 2. **Data acquisition + quality checks** ✅ — download the dataset, check for a
    sample ratio mismatch (was the random split actually fair?), missing
    data, duplicates, outliers. See [`docs/DATA_QUALITY.md`](docs/DATA_QUALITY.md).
-3. **Power analysis** — given the actual sample size, what effect size
-   could this experiment realistically detect? Sanity-check that against
-   what was observed.
+3. **Power analysis** ✅ — given the actual sample size, what effect size
+   could this experiment realistically detect? See [`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md).
 4. **Primary hypothesis test** — statistical significance test(s) on the
    primary metric, plus a bootstrap confidence interval as a cross-check.
 5. **Guardrail / secondary metrics** — test the remaining metrics, correct
@@ -100,8 +99,17 @@ rather than arriving as a finished repo.
    rule about not silently editing the plan after seeing data.
 4. Initialized git and pushed to GitHub.
 
-**Not done yet, on purpose:** no power analysis, no hypothesis test run.
-Phase 3 (power analysis) is the next session.
+**Session 4 — power analysis**
+
+1. Wrote [`notebooks/02_power_analysis.py`](notebooks/02_power_analysis.py), using
+   only the control group's baseline `retention_7` rate and the actual (unequal)
+   sample sizes — deliberately not comparing `gate_30` vs `gate_40` outcomes yet.
+2. Found the MDE at 80% power: **+0.74 percentage points absolute** (a 3.89%
+   relative lift over the 19.02% baseline). Full results and what this means for
+   interpreting Phase 4's result in [`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md).
+
+**Not done yet, on purpose:** no hypothesis test run. Phase 4 (primary hypothesis
+test) is the next session.
 
 ## Project layout
 
@@ -111,8 +119,10 @@ data/
   raw/                     gitignored — cookie_cats.csv lives here locally
 notebooks/
   01_data_quality_checks.py
+  02_power_analysis.py
 docs/
   PREREGISTRATION.md      hypotheses, metrics, test plan, decision framework
   DATA_QUALITY.md         Phase 2 checks and the SRM finding
+  POWER_ANALYSIS.md       Phase 3 results and the MDE
 requirements.txt          analysis dependencies
 ```
