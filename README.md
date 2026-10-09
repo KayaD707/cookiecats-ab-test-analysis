@@ -1,6 +1,6 @@
 # Cookie Cats A/B Test Analysis
 
-**Status:** power analysis complete ([`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md)) — this sample can detect a +0.74pp absolute lift in `retention_7` at 80% power. The primary hypothesis test (Phase 4) is next — still deliberately not run yet.
+**Status:** primary hypothesis test complete ([`docs/PRIMARY_TEST.md`](docs/PRIMARY_TEST.md)) — moving the gate to level 40 **significantly lowers** 7-day retention (−0.82pp, p = 0.0016), the opposite of what shipping the change would need. Guardrail metrics (Phase 5) are next.
 
 ## Business question
 
@@ -49,8 +49,9 @@ Each phase below is intended to be its own session — depth over speed.
    data, duplicates, outliers. See [`docs/DATA_QUALITY.md`](docs/DATA_QUALITY.md).
 3. **Power analysis** ✅ — given the actual sample size, what effect size
    could this experiment realistically detect? See [`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md).
-4. **Primary hypothesis test** — statistical significance test(s) on the
-   primary metric, plus a bootstrap confidence interval as a cross-check.
+4. **Primary hypothesis test** ✅ — statistical significance test(s) on the
+   primary metric, plus a bootstrap confidence interval as a cross-check. See
+   [`docs/PRIMARY_TEST.md`](docs/PRIMARY_TEST.md).
 5. **Guardrail / secondary metrics** — test the remaining metrics, correct
    for multiple comparisons rather than cherry-picking the metric that
    moved.
@@ -108,8 +109,20 @@ rather than arriving as a finished repo.
    relative lift over the 19.02% baseline). Full results and what this means for
    interpreting Phase 4's result in [`docs/POWER_ANALYSIS.md`](docs/POWER_ANALYSIS.md).
 
-**Not done yet, on purpose:** no hypothesis test run. Phase 4 (primary hypothesis
-test) is the next session.
+**Session 5 — primary hypothesis test**
+
+1. Wrote [`notebooks/03_primary_hypothesis_test.py`](notebooks/03_primary_hypothesis_test.py):
+   the pre-registered two-proportion z-test on `retention_7`, a chi-square
+   cross-check (confirms z² = χ² exactly), and a 10,000-resample bootstrap CI.
+2. **Result: gate_40 significantly lowers `retention_7`** by 0.82 percentage
+   points (19.02% → 18.20%, p = 0.00155, 95% bootstrap CI [−1.34pp, −0.33pp]).
+   The opposite direction from what shipping the change would need. Full
+   write-up, including how this reads against the Phase 3 MDE and the
+   still-open Phase 2 SRM caveat, in [`docs/PRIMARY_TEST.md`](docs/PRIMARY_TEST.md).
+
+**Not done yet, on purpose:** guardrail metrics (`retention_1`,
+`sum_gamerounds`) not tested — Phase 5 is next, kept separate so this result
+can't retroactively be supplemented by a guardrail metric.
 
 ## Project layout
 
@@ -120,9 +133,11 @@ data/
 notebooks/
   01_data_quality_checks.py
   02_power_analysis.py
+  03_primary_hypothesis_test.py
 docs/
   PREREGISTRATION.md      hypotheses, metrics, test plan, decision framework
   DATA_QUALITY.md         Phase 2 checks and the SRM finding
   POWER_ANALYSIS.md       Phase 3 results and the MDE
+  PRIMARY_TEST.md         Phase 4 result: gate_40 lowers retention_7
 requirements.txt          analysis dependencies
 ```
